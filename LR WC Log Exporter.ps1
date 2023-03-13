@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 
 Write-Host ""
-Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.4'
+Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.5'
 Write-Host 'Compiled by NateDeMaster'
 Write-Host ""
 
@@ -47,6 +47,8 @@ if (-not (Get-Module -Name ImportExcel -ListAvailable)) {
 # Import Module
 
 Import-Module ImportExcel
+
+do {
 
 Write-Host ""
 Write-Host "Please select your file for processing.."
@@ -283,6 +285,14 @@ else {
     $excel.Quit()
 }
 
-
-
 }
+
+# Prompt the user to process another file
+$msgBoxTitle = "Process more files?"
+$msgBoxMessage = "Do you want to process more CSV files?"
+$msgBoxButtons = [System.Windows.Forms.MessageBoxButtons]::YesNo
+$msgBoxIcon = [System.Windows.Forms.MessageBoxIcon]::Question
+$processMoreFiles = [System.Windows.Forms.MessageBox]::Show($msgBoxMessage, $msgBoxTitle, $msgBoxButtons, $msgBoxIcon)
+
+} while ($processMoreFiles -eq [System.Windows.Forms.DialogResult]::Yes)
+
