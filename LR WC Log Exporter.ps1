@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 
 Write-Host ""
-Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.0'
+Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.4'
 Write-Host 'Compiled by NateDeMaster'
 Write-Host ""
 
@@ -248,39 +248,41 @@ foreach ($row in $data) {
     $range = $sheet.UsedRange
     $range.EntireColumn.AutoFit() | Out-Null
 
+     # Apply TableStyleMedium13
+     $table = $sheet.ListObjects.Add([Microsoft.Office.Interop.Excel.XlListObjectSourceType]::xlSrcRange, $range, $null, [Microsoft.Office.Interop.Excel.XlYesNoGuess]::xlYes)
+    $table.TableStyle = "TableStyleMedium13"
+
    # Remove progress bar
    Write-Progress -Activity "Converting to Excel workbook..." -Completed
 
    Write-Host "Processing Complete..."
 
-    # Save and close the workbook
-    $workbook.SaveAs($filePath + ".xlsx", 51) # 51 is the XlFileFormat for Excel 2007 or later
-    $workbook.Close($true)
-    $excel.Quit()
+# Show save dialog
+$result = [System.Windows.Forms.MessageBox]::Show("Do you want to select where to save the Excel file?" + [Environment]::NewLine + "" + [Environment]::NewLine + "Note: Selecting no will save the file in the same location as the original CSV", "Save As", [System.Windows.Forms.MessageBoxButtons]::YesNo)
+if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
+    # Create save file dialog
+    $saveFileDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $saveFileDialog.Filter = "Excel files (*.xlsx)|*.xlsx"
+    $saveFileDialog.FileName = [System.IO.Path]::GetFileNameWithoutExtension($filePath)
+    $saveFileDialog.InitialDirectory = [System.IO.Path]::GetDirectoryName($filePath)
 
-    Write-Host
-
-# Prompt user to select an Excel file
-$fileDialog = New-Object System.Windows.Forms.OpenFileDialog
-$fileDialog.Filter = "Excel Files (*.xlsx, *.xls)|*.xlsx;*.xls"
-$dialogResult = $fileDialog.ShowDialog()
-
-if ($dialogResult -eq [System.Windows.Forms.DialogResult]::OK) {
-    $filePath = $fileDialog.FileName
-    # Prompt user for formatting confirmation
-    $result = [System.Windows.Forms.MessageBox]::Show("Do you want to format the Excel workbook as a table?", "Confirmation", [System.Windows.Forms.MessageBoxButtons]::YesNo)
-
-    if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
-        # Load the Excel workbook and format as table
-        $xlsx = Import-Excel $filePath
-        $xlsx | Format-Table
-        $xlsx | Export-Excel -Path $filePath -TableStyle 'Medium13' -AutoSize
-    } elseif ($result -eq [System.Windows.Forms.DialogResult]::No) {
-        # Do nothing, end script
-    } else {
-        Write-Host "Invalid input. Please select Yes or No."
+    # Show the dialog and get the selected filename and location
+    if ($saveFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $excel.DisplayAlerts = $false
+        $workbook.SaveAs($saveFileDialog.FileName, 51)
+        $excel.DisplayAlerts = $true
+        $workbook.Close()
+        $excel.Quit()
     }
 }
+else {
+    $excel.DisplayAlerts = $false
+    $workbook.SaveAs($filePath + ".xlsx", 51)
+    $excel.DisplayAlerts = $true
+    $workbook.Close()
+    $excel.Quit()
+}
+
 
 
 }
