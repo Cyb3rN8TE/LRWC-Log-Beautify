@@ -1,36 +1,10 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-
 Write-Host ""
 Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.5'
 Write-Host 'Compiled by NateDeMaster'
 Write-Host ""
-
-function Show-LoadingBar {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [int]$DurationInSeconds
-    )
-
-    $interval = 50
-    $totalTicks = [Math]::Floor($DurationInSeconds * 1000 / $interval)
-    $completedTicks = 0
-
-    Write-Host "Loading..." -NoNewline
-
-    while ($completedTicks -lt $totalTicks) {
-        Write-Host -NoNewline "." -ForegroundColor Cyan
-        $completedTicks++
-        Start-Sleep -Milliseconds $interval
-    }
-
-    Write-Host " Done." -ForegroundColor Green
-}
-
-
-Show-LoadingBar -DurationInSeconds 2
 
 # Check if ImportExcel Module is installed for the user and if not, install it
 
@@ -47,6 +21,8 @@ if (-not (Get-Module -Name ImportExcel -ListAvailable)) {
 # Import Module
 
 Import-Module ImportExcel
+
+# Main processing code in a do loop that will run until the user doesn't want to process anymore CSV files
 
 do {
 
@@ -216,7 +192,7 @@ foreach ($row in $data) {
     }
 }
 
-    # Initialize row count
+    # Initialise row count
     $rowCount = $data.Count
 
     # Convert the contents to an Excel workbook
@@ -246,7 +222,7 @@ foreach ($row in $data) {
         Write-Progress -Activity "Processing File and Converting to Excel workbook..." -PercentComplete $percentComplete
     }
 
-    # Resize the cells to fit the contents
+    # Resise the cells to fit the contents
     $range = $sheet.UsedRange
     $range.EntireColumn.AutoFit() | Out-Null
 
