@@ -9,5 +9,5 @@ What does it do?
 2) Re-arranges field columns for readability
 3) Converts 'Log Date' from UTC to Local Time
 4) Defangs any IP Addresses, URLs and Domains within any cells.
-5) Formats the spreadsheet as a table (selectable option) 
+5) Formats the spreadsheet as a table
 6) Save resulting file as a .XLSX Workbook
