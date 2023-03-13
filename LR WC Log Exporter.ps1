@@ -253,6 +253,11 @@ if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
         $excel.DisplayAlerts = $true
         $workbook.Close()
         $excel.Quit()
+
+        # Release the Excel object from memory
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+
+        Get-Process Excel | Where-Object {$_.MainWindowTitle -eq ''} | Stop-Process
     }
 }
 else {
@@ -261,6 +266,11 @@ else {
     $excel.DisplayAlerts = $true
     $workbook.Close()
     $excel.Quit()
+    
+    # Release the Excel object from memory
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+
+    Get-Process Excel | Where-Object {$_.MainWindowTitle -eq ''} | Stop-Process
 }
 
 }
