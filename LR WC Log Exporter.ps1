@@ -1,5 +1,7 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -Path ".\Microsoft.Office.Interop.Excel.dll"
+
 
 Write-Host ""
 Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.5'
