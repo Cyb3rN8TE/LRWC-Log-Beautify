@@ -1,4 +1,4 @@
-# LR WC Log Exporter
+# LRWC Log Beautify
 
 **Why do we need this?**
 
@@ -22,7 +22,7 @@ Microsoft Office 2016 installed on system
 - ImportExcel (https://www.powershellgallery.com/packages/ImportExcel/)
 
 **How to run the tool:**
-1) Right click LR WC Log Exporter.ps1 and select 'run with PowerShell'
+1) Right click LRWC Log Beautify.ps1 and select 'run with PowerShell'
 2) If NuGet and ImportExcel are NOT detected on the system, accept any prompts if you want to download and install them automatically. 
 3) Alternatively, you can download and install them manually by entering the commands below:
 
