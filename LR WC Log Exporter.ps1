@@ -2,11 +2,26 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -Path ".\Microsoft.Office.Interop.Excel.dll"
 
+# Set dimensions for PowerShell window
 
+$Width = 170
+$Height = 60
+[Console]::SetWindowSize($Width, $Height)
+
+# Banner start
 Write-Host ""
-Write-Host 'LR ' -NoNewline; Write-Host -ForegroundColor White 'WC Log Exporter ' -NoNewline; Write-Host 'V 1.0.5'
-Write-Host 'Compiled by NateDeMaster'
-Write-Host ""
+Write-Host -ForegroundColor White '888      8888888b.  888       888  .d8888b.       888                            888888b.                              888    d8b  .d888          '
+Write-Host -ForegroundColor White '888      888   Y88b 888   o   888 d88P  Y88b      888                            888  "88b                             888    Y8P d88P"           '
+Write-Host -ForegroundColor White '888      888    888 888  d8b  888 888    888      888                            888  .88P                             888        888             '
+Write-Host -ForegroundColor White '888      888   d88P 888 d888b 888 888             888      .d88b.   .d88b.       8888888K.   .d88b.   8888b.  888  888 888888 888 888888 888  888 '
+Write-Host -ForegroundColor White '888      8888888P"  888d88888b888 888             888     d88""88b d88P"88b      888  "Y88b d8P  Y8b     "88b 888  888 888    888 888    888  888 '
+Write-Host -ForegroundColor White '888      888 T88b   88888P Y88888 888    888      888     888  888 888  888      888    888 88888888 .d888888 888  888 888    888 888    888  888 '
+Write-Host -ForegroundColor White '888      888  T88b  8888P   Y8888 Y88b  d88P      888     Y88..88P Y88b 888      888   d88P Y8b.     888  888 Y88b 888 Y88b.  888 888    Y88b 888 '
+Write-Host -ForegroundColor White '88888888 888   T88b 888P     Y888  "Y8888P"       88888888 "Y88P"   "Y88888      8888888P"   "Y8888  "Y888888  "Y88888  "Y888 888 888     "Y88888 '
+Write-Host -ForegroundColor White '                                                                        888                                                                   888 '
+Write-Host -ForegroundColor White 'Compiled by nwjohns101                                             Y8b d88P                                                              Y8b d88P '
+Write-Host -ForegroundColor White '                                                                    "Y88P"                                                                "Y88P"  '
+#Banner end
 
 # Check if ImportExcel Module is installed for the user and if not, install it
 
@@ -254,9 +269,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
         $workbook.Close()
         $excel.Quit()
 
-        # Release the Excel object from memory
+        # Release the Excel object from memory to prevent memory leaks
         [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
 
+        # Kill excel processes that are not visible
         Get-Process Excel | Where-Object {$_.MainWindowTitle -eq ''} | Stop-Process
     }
 }
@@ -267,9 +283,10 @@ else {
     $workbook.Close()
     $excel.Quit()
     
-    # Release the Excel object from memory
+    # Release the Excel object from memory to prevent memory leaks
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
 
+    # Kill excel processes that are not visible
     Get-Process Excel | Where-Object {$_.MainWindowTitle -eq ''} | Stop-Process
 }
 
@@ -283,4 +300,8 @@ $msgBoxIcon = [System.Windows.Forms.MessageBoxIcon]::Question
 $processMoreFiles = [System.Windows.Forms.MessageBox]::Show($msgBoxMessage, $msgBoxTitle, $msgBoxButtons, $msgBoxIcon)
 
 } while ($processMoreFiles -eq [System.Windows.Forms.DialogResult]::Yes)
+
+# Prompt the user to exit
+Write-Host "Press any key to exit..."
+$null = Read-Host
 
