@@ -45,139 +45,107 @@ do {
 
     Write-Host ""
     Write-Host "Please select your file for processing.."
-
+    
     # Define array of values to check for in column headers
     $valuesToDelete = @('User Agent', 'Response Code', 'Quantity', 'Amount', 'Rate', 'Duration', 'Host (Impacted) KBytes Rcvd', 'Host (Impacted) KBytes Sent', 'Host (Impacted) Packets Sent', 'Host (Impacted) Packets Total', 'Severity', 'Vendor Info', 'Serial Number', 'Entity (Origin)', 'Entity (Impacted)', 'Region (Origin)', 'Region (Impacted)', 'Log Count', 'Log Source Host', 'Log Sequence Number', 'First Log Date', 'Last Log Date', 'Rule Block', 'User (Origin) Identity', 'User (Impacted) Identity')
-
+    
     # Create open file dialog
     $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
     $openFileDialog.InitialDirectory = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition)
     $openFileDialog.Filter = "CSV files (*.csv)|*.csv"
-
+    
     # Show the dialog and get the selected file
     if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) 
-     {
-
-     $filePath = $openFileDialog.FileName
-
-     # Load the CSV file
-     $data = Import-Csv -Path $filePath
-
-
+    {
+    
+        $filePath = $openFileDialog.FileName
+    
+        # Load the CSV file
+        $data = Import-Csv -Path $filePath
+    
         # Move columns to reflect provided order
-
         $orderedColumns = @(
-        "Log Source Entity",
-        "Log Date",
-        "User (Origin)",
-        "Session",
-        "User (Impacted)",
-        "Log Source Type",
-        "Log Source",
-        "Classification",
-        "Common Event",
-        "Direction",
-        "Host (Origin)",
-        "Host (Impacted)",
-        "Application",
-        "Object",
-        "Object Name",
-        "Object Type",
-        "Hash",
-        "Policy",
-        "Result",
-        "URL",
-        "Subject",
-        "Version",
-        "Command",
-        "Reason",
-        "Action",
-        "Status",
-        "Session Type",
-        "Process Name",
-        "Process ID",
-        "Parent Process ID",
-        "Parent Process Name",
-        "Parent Process Path",
-        "Size",
-        "Known Application",
-        "Host (Impacted) KBytes Total",
-        "Host (Impacted) Packets Rcvd",
-        "Priority",
-        "Vendor Message ID",
-        "MPE Rule Name",
-        "Threat Name",
-        "Threat ID",
-        "CVE",
-        "MAC Address (Origin)",
-        "MAC Address (Impacted)",
-        "Interface (Origin)",
-        "Interface (Impacted)",
-        "IP Address (Origin)",
-        "IP Address (Impacted)",
-        "NAT IP Address (Origin)",
-        "NAT IP Address (Impacted)",
-        "Hostname (Origin)",
-        "Hostname (Impacted)",
-        "Known Host (Origin)",
-        "Known Host (Impacted)",
-        "Network (Origin)",
-        "Network (Impacted)",
-        "Domain (Impacted)",
-        "Domain (Origin)",
-        "Protocol",
-        "TCP/UDP Port (Origin)",
-        "TCP/UDP Port (Impacted)",
-        "NAT TCP/UDP Port (Origin)",
-        "NAT TCP/UDP Port (Impacted)",
-        "Actions",
-        "Sender Identity",
-        "Recipient Identity",
-        "Sender",
-        "Recipient",
-        "Group",
-        "Zone (Origin)",
-        "Zone (Impacted)",
-        "Location (Origin)",
-        "Location (Impacted)",
-        "Country (Origin)",
-        "Country (Impacted)",
-        "Log Message"
+            "Log Source Entity",
+            "Log Date",
+            "User (Origin)",
+            "Session",
+            "User (Impacted)",
+            "Log Source Type",
+            "Log Source",
+            "Classification",
+            "Common Event",
+            "Direction",
+            "Host (Origin)",
+            "Host (Impacted)",
+            "Application",
+            "Object",
+            "Object Name",
+            "Object Type",
+            "Hash",
+            "Policy",
+            "Result",
+            "URL",
+            "Subject",
+            "Version",
+            "Command",
+            "Reason",
+            "Action",
+            "Status",
+            "Session Type",
+            "Process Name",
+            "Process ID",
+            "Parent Process ID",
+            "Parent Process Name",
+            "Parent Process Path",
+            "Size",
+            "Known Application",
+            "Host (Impacted) KBytes Total",
+            "Host (Impacted) Packets Rcvd",
+            "Priority",
+            "Vendor Message ID",
+            "MPE Rule Name",
+            "Threat Name",
+            "Threat ID",
+            "CVE",
+            "MAC Address (Origin)",
+            "MAC Address (Impacted)",
+            "Interface (Origin)",
+            "Interface (Impacted)",
+            "IP Address (Origin)",
+            "IP Address (Impacted)",
+            "NAT IP Address (Origin)",
+            "NAT IP Address (Impacted)",
+            "Hostname (Origin)",
+            "Hostname (Impacted)",
+            "Known Host (Origin)",
+            "Known Host (Impacted)",
+            "Network (Origin)",
+            "Network (Impacted)",
+            "Domain (Impacted)",
+            "Domain (Origin)",
+            "Protocol",
+            "TCP/UDP Port (Origin)",
+            "TCP/UDP Port (Impacted)",
+            "NAT TCP/UDP Port (Origin)",
+            "NAT TCP/UDP Port (Impacted)",
+            "Actions",
+            "Sender Identity",
+            "Recipient Identity",
+            "Sender",
+            "Recipient",
+            "Group",
+            "Zone (Origin)",
+            "Zone (Impacted)",
+            "Location (Origin)",
+            "Location (Impacted)",
+            "Country (Origin)",
+            "Country (Impacted)",
+            "Log Message"
         )
-
+    
         # Reorder columns
         $data = $data | Select-Object $orderedColumns
-
-            # Remove columns containing specified values
-            foreach ($value in $valuesToDelete) {
-                $columnIndex = 0
-                foreach ($header in $data[0].PSObject.Properties.Name) {
-                    if ($header -eq $value) {
-                        $data = $data | Select-Object -Property ($data[0].PSObject.Properties.Name | Where-Object {$_ -ne $value})
-                        break
-                    }
-                    $columnIndex++
-                }
-            }
-
-
-        # Get the local time zone
-        $localTimeZone = [TimeZoneInfo]::Local
-
-        # Loop through each row of the data
-        foreach ($row in $data) {
-            # Parse the UTC date/time value in the Log Date column
-            $utcDateTime = [DateTime]::Parse($row.'Log Date')
-
-            # Convert the UTC date/time value to the local time zone
-            $localDateTime = [TimeZoneInfo]::ConvertTimeFromUtc($utcDateTime, $localTimeZone)
-
-            # Replace the value in the Log Date column with the converted local time value
-            $row.'Log Date' = $localDateTime.ToString('yyyy-MM-dd HH:mm:ss')
-            
-        }
-   
-
+    
         # Define the column names that should be modified
         $columnsToModify = @(
             "URL",
@@ -196,12 +164,32 @@ do {
             "Protocol",
             "Log Message"
         )
-
-        # Loop through each row and modify the specified columns
+    
+        # Get the local time zone
+        $localTimeZone = [TimeZoneInfo]::Local
+    
+        # Loop through each row of the data
         foreach ($row in $data) {
+            # Remove columns containing specified values
+            foreach ($value in $valuesToDelete) {
+                if ($row.PSObject.Properties.Name -contains $value) {
+                    $row.PSObject.Properties.Remove($value)
+                }
+            }
+    
+            # Parse the UTC date/time value in the Log Date column
+            $utcDateTime = [DateTime]::Parse($row.'Log Date')
+    
+            # Convert the UTC date/time value to the local time zone
+            $localDateTime = [TimeZoneInfo]::ConvertTimeFromUtc($utcDateTime, $localTimeZone)
+    
+            # Replace the value in the Log Date column with the converted local time value
+            $row.'Log Date' = $localDateTime.ToString('yyyy-MM-dd HH:mm:ss')
+    
+            # Modify specified columns
             foreach ($column in $columnsToModify) {
                 $value = $row.$column
-                
+                    
                 # Check if the value is not empty
                 if (![string]::IsNullOrEmpty($value)) {
                     # Replace '.' and ':' with '[.]' and '[:]', respectively
