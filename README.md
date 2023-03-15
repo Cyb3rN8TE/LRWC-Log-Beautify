@@ -60,3 +60,8 @@ Run the following command to install the module from the PowerShell Gallery:
 ```
 Install-Module -Name ImportExcel
 ```
+* * *
+**Demo**
+
+![alt text](Demo/Demo1.gif)
+![alt text](Demo/Demo2.gif)
