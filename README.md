@@ -73,14 +73,10 @@ Install-Module -Name ImportExcel
 2) Enter the command powershell and hit enter
 
 ```
-powershell
+pwsh
 ```
-3) Specific the location to run the file
 
-```
-cd {Full Path}
-```
-4) Run LRWC Log Beautify.ps1
+3) Run LRWC Log Beautify.ps1
 
 ```
 ./LRWC Log Beautify.ps1
