@@ -38,9 +38,10 @@ if (-not (Get-Module -Name ImportExcel -ListAvailable)) {
 
 Import-Module ImportExcel
 
-# Main processing code in a do loop that will run until the user doesn't want to process anymore CSV files
+# Switch statement that detects which operating system is being used (Windows or Mac OS)
 
 switch ($env:OS) {
+    # Windows OS Script
     "Windows_NT" {
 
         Write-Host ""
@@ -300,12 +301,11 @@ switch ($env:OS) {
             $msgBoxIcon = [System.Windows.Forms.MessageBoxIcon]::Question
             $processMoreFiles = [System.Windows.Forms.MessageBox]::Show($msgBoxMessage, $msgBoxTitle, $msgBoxButtons, $msgBoxIcon)
 
-
-
-
-        #Keep running the script until the user selects no
+        # Keep prompting user to process more CSV files until the user selects no
 } while ($processMoreFiles -eq [System.Windows.Forms.DialogResult]::Yes)
+
     }
+    # Mac OS Script
     "darwin" {
         do {
             Write-Host ""
@@ -316,25 +316,140 @@ switch ($env:OS) {
             $path = Read-Host "Enter the file path of the CSV file"
             $data = Import-Csv $path
         
-            # Delete the User Agent column
-            $data = $data | Select-Object -Property 'Log Source Entity','Log Date','User (Origin)','URL','Subject'
+            # Delete the columns
+            $data = $data | Select-Object -Property 
+            'User Agent', 
+            'Response Code', 
+            'Quantity', 
+            'Amount', 
+            'Rate', 
+            'Duration', 
+            'Host (Impacted) KBytes Rcvd', 
+            'Host (Impacted) KBytes Sent', 
+            'Host (Impacted) Packets Sent', 
+            'Host (Impacted) Packets Total', 
+            'Severity', 
+            'Vendor Info', 
+            'Serial Number', 
+            'Entity (Origin)', 
+            'Entity (Impacted)', 
+            'Region (Origin)', 
+            'Region (Impacted)', 
+            'Log Count', 
+            'Log Source Host', 
+            'Log Sequence Number', 
+            'First Log Date', 
+            'Last Log Date', 
+            'Rule Block', 
+            'User (Origin) Identity', 
+            'User (Impacted) Identity'
         
             # Re-order columns
-            $data = $data | Select-Object -Property 'Log Source Entity','Log Date','User (Origin)','URL','Subject'
-        
+            $data = $data | Select-Object -Property
+            'Log Source Entity',
+            'Log Date',
+            'User (Origin)',
+            'Session',
+            'User (Impacted)',
+            'Log Source Type',
+            'Log Source',
+            'Classification',
+            'Common Event',
+            'Direction',
+            'Host (Origin)',
+            'Host (Impacted)',
+            'Application',
+            'Object',
+            'Object Name',
+            'Object Type',
+            'Hash',
+            'Policy',
+            'Result',
+            'URL',
+            'Subject',
+            'Version',
+            'Command',
+            'Reason',
+            'Action',
+            'Status',
+            'Session Type',
+            'Process Name',
+            'Process ID',
+            'Parent Process ID',
+            'Parent Process Name',
+            'Parent Process Path',
+            'Size',
+            'Known Application',
+            'Host (Impacted) KBytes Total',
+            'Host (Impacted) Packets Rcvd',
+            'Priority',
+            'Vendor Message ID',
+            'MPE Rule Name',
+            'Threat Name',
+            'Threat ID',
+            'CVE',
+            'MAC Address (Origin)',
+            'MAC Address (Impacted)',
+            'Interface (Origin)',
+            'Interface (Impacted)',
+            'IP Address (Origin)',
+            'IP Address (Impacted)',
+            'NAT IP Address (Origin)',
+            'NAT IP Address (Impacted)',
+            'Hostname (Origin)',
+            'Hostname (Impacted)',
+            'Known Host (Origin)',
+            'Known Host (Impacted)',
+            'Network (Origin)',
+            'Network (Impacted)',
+            'Domain (Impacted)',
+            'Domain (Origin)',
+            'Protocol',
+            'TCP/UDP Port (Origin)',
+            'TCP/UDP Port (Impacted)',
+            'NAT TCP/UDP Port (Origin)',
+            'NAT TCP/UDP Port (Impacted)',
+            'Actions',
+            'Sender Identity',
+            'Recipient Identity',
+            'Sender',
+            'Recipient',
+            'Group',
+            'Zone (Origin)',
+            'Zone (Impacted)',
+            'Location (Origin)',
+            'Location (Impacted)',
+            'Country (Origin)',
+            'Country (Impacted)',
+            'Log Message'
+
             # Convert the 'Log Date' column to local time
             $data = $data | ForEach-Object { $_.'Log Date' = ([DateTime]::Parse($_.'Log Date')).ToLocalTime().ToString('yyyy-MM-dd HH:mm:ss'); $_ }
         
-            # Replace '.' and ':' with '[.]' and '[:]' in URL and Subject columns
-            $data = $data | ForEach-Object {
-                $_.URL = $_.URL -replace '\.', '[.]'
-                $_.URL = $_.URL -replace ':', '[:]'
-                $_.Subject = $_.Subject -replace '\.', '[.]'
-                $_.Subject = $_.Subject -replace ':', '[:]'
-                $_
-            }
-        
-            # Allow the user to save the CSV file with a name and path of their choosing
+        # Defang URLs and IPs
+        $data = $data | ForEach-Object -PipelineVariable item {
+            $item.URL = $item.URL -replace '\.', '[.]'
+            $item.URL = $item.URL -replace ':', '[:]'
+            $item.Subject = $item.Subject -replace '\.', '[.]'
+            $item.Subject = $item.Subject -replace ':', '[:]'
+            $item.{"Host (Origin)"} = $item.{"Host (Origin)"} -replace '\.', '[.]'
+            $item.{"Host (Impacted)"} = $item.{"Host (Impacted)"} -replace '\.', '[.]'
+            $item.{"IP Address (Origin)"} = $item.{"IP Address (Origin)"} -replace '\.', '[.]'
+            $item.{"IP Address (Impacted)"} = $item.{"IP Address (Impacted)"} -replace '\.', '[.]'
+            $item.{"NAT IP Address (Origin)"} = $item.{"NAT IP Address (Origin)"} -replace '\.', '[.]'
+            $item.{"NAT IP Address (Impacted)"} = $item.{"NAT IP Address (Impacted)"} -replace '\.', '[.]'
+            $item.{"Hostname (Origin)"} = $item.{"Hostname (Origin)"} -replace '\.', '[.]'
+            $item.{"Hostname (Impacted)"} = $item.{"Hostname (Impacted)"} -replace '\.', '[.]'
+            $item.{"Known Host (Origin)"} = $item.{"Known Host (Origin)"} -replace '\.', '[.]'
+            $item.{"Known Host (Impacted)"} = $item.{"Known Host (Impacted)"} -replace '\.', '[.]'
+            $item.{"Domain (Impacted)"} = $item.{"Domain (Impacted)"} -replace '\.', '[.]'
+            $item.{"Domain (Origin)"} = $item.{"Domain (Origin)"} -replace '\.', '[.]'
+            $item.{"Log Message"} = $item.{"Log Message"} -replace '\.', '[.]'
+            $item.{"Log Message"} = $item.{"Log Message"} -replace ':', '[:]'
+            return $item
+        }
+
+            # save the CSV file with a name and path
             $savePath = Read-Host "Enter the file path and name to save the modified CSV file"
             $data | Export-Csv $savePath -NoTypeInformation
         
@@ -350,6 +465,7 @@ switch ($env:OS) {
         
         } while ($true)
     }
+    # Unsupported OS
     default {
         Write-Host "Unsupported operating system."
         Write-Host ""
