@@ -1,11 +1,3 @@
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-
-# Set dimensions for PowerShell window
-
-$Width = 170
-$Height = 60
-[Console]::SetWindowSize($Width, $Height)
 
 # Banner start
 Write-Host ""
@@ -44,12 +36,33 @@ switch ($env:OS) {
     # Windows OS Script
     "Windows_NT" {
 
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+
+        # Set dimensions for PowerShell window
+
+        $Width = 170
+        $Height = 60
+        [Console]::SetWindowSize($Width, $Height)
+
+        $sourcePath = $PSScriptRoot + "\Microsoft.Office.Interop.Excel.dll"
+        $destinationPath = "$env:userprofile\Microsoft.Office.Interop.Excel.dll"
+
+        if (Test-Path $destinationPath) {
+        Write-Host ""
+        Write-Host "Microsoft.Office.Interop.Excel.dll was found in user profile path"
+        } else {
+         Copy-Item -Path $sourcePath -Destination $destinationPath
+        Write-Host ""
+        Write-Host "Microsoft.Office.Interop.Excel.dll was not found in user profile path, file copied to user profile path."
+        }
+
+        Add-Type -Path ".\Microsoft.Office.Interop.Excel.dll"
+
         Write-Host ""
         Write-Host "Windows OS detected"
 
         do {
-            
-            Add-Type -Path ".\Microsoft.Office.Interop.Excel.dll"
 
             Write-Host ""
             Write-Host "Please select your file for processing.."
@@ -65,7 +78,8 @@ switch ($env:OS) {
             # Show the dialog and get the selected file
             if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) 
             {
-            
+                Clear-Host
+                
                 $filePath = $openFileDialog.FileName
             
                 # Load the CSV file
@@ -292,7 +306,9 @@ switch ($env:OS) {
                         Get-Process Excel | Where-Object {$_.MainWindowTitle -eq ''} | Stop-Process
                     }
         
-            } 
+            }
+
+            Clear-Host
         
             # Prompt the user to process another file
             $msgBoxTitle = "Process more files?"
