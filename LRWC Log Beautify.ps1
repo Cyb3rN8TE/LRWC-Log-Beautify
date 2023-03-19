@@ -32,9 +32,11 @@ Import-Module ImportExcel
 
 # Switch statement that detects which operating system is being used (Windows or Mac OS)
 
-switch ($env:OS) {
+$osCaption = (Get-WmiObject Win32_OperatingSystem).Caption
+
+switch -regex ($osCaption) {
     # Windows OS Script
-    "Windows_NT" {
+    "^Microsoft Windows.*" {
 
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
@@ -79,7 +81,7 @@ switch ($env:OS) {
             if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) 
             {
                 Clear-Host
-                
+
                 $filePath = $openFileDialog.FileName
             
                 # Load the CSV file
@@ -322,7 +324,7 @@ switch ($env:OS) {
 
     }
     # Mac OS Script
-    "darwin" {
+    "^Mac OS X.*" {
         do {
             Write-Host ""
             Write-Host "Mac OS detected"
