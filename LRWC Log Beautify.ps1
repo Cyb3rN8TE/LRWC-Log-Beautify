@@ -469,7 +469,6 @@ switch ($env:OS) {
     default {
         Write-Host "Unsupported operating system."
         Write-Host ""
-        Write-Host "Press any key to exit..."
         $null = Read-Host
     }
 }
