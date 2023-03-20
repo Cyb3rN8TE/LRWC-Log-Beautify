@@ -19,7 +19,7 @@ Write-Host -ForegroundColor White '                                             
 
 switch ($env:OS) {
     # Windows OS Script
-    "Windows_NT" {
+    "Windows_iNT" {
 
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
@@ -455,6 +455,9 @@ switch ($env:OS) {
             )
             
 
+            # Prompt user to enter the number of hours their local time zone differs from UTC
+            $hoursDiff = Read-Host "Please enter the number of hours your local time zone differs from UTC."
+
             # Loop through each row of the data
             foreach ($row in $data) {
                 # Remove columns containing specified values
@@ -465,12 +468,12 @@ switch ($env:OS) {
                 }
 
                 # Convert Log Date to local time
-                $row.'Log Date' = [DateTime]::Parse($row.'Log Date').AddHours(11).ToString()
+                $row.'Log Date' = [DateTime]::Parse($row.'Log Date').AddHours($hoursDiff).ToString()
 
                 # Modify specified columns
                 foreach ($column in $columnsToModify) {
                     $value = $row.$column
-            
+
                     # Check if the value is not empty
                     if (![string]::IsNullOrEmpty($value)) {
                         # Defang values
