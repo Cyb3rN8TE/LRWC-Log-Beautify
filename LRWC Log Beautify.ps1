@@ -14,29 +14,12 @@ Write-Host -ForegroundColor White 'Compiled by nwjohns101                       
 Write-Host -ForegroundColor White '                                                                    "Y88P"                                                                "Y88P"  '
 #Banner end
 
-# Check if ImportExcel Module is installed for the user and if not, install it
-
-if (-not (Get-Module -Name ImportExcel -ListAvailable)) {
-    
-    Write-Host ""
-    Write-Output "ImportExcel module not found. Installing module..."
-    Install-Module -Name ImportExcel -Scope CurrentUser -Force
-} else {
-    Write-Host ""
-    Write-Output "ImportExcel module found."
-}
-
-# Import Module
-
-Import-Module ImportExcel
-
 # Switch statement that detects which operating system is being used (Windows or Mac OS)
 
-$osCaption = (Get-WmiObject Win32_OperatingSystem).Caption
 
-switch -regex ($osCaption) {
+switch ($env:OS) {
     # Windows OS Script
-    "^Microsoft Windows.*" {
+    "Windows_NT" {
 
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
@@ -46,6 +29,21 @@ switch -regex ($osCaption) {
         $Width = 170
         $Height = 60
         [Console]::SetWindowSize($Width, $Height)
+
+        # Check if ImportExcel Module is installed for the user and if not, install it
+
+        if (-not (Get-Module -Name ImportExcel -ListAvailable)) {
+    
+        Write-Host ""
+        Write-Output "ImportExcel module not found. Installing module..."
+        Install-Module -Name ImportExcel -Scope CurrentUser -Force
+        } else {
+        Write-Host ""
+        Write-Output "ImportExcel module found."
+        }
+
+        # Import Module
+        Import-Module ImportExcel
 
         $sourcePath = $PSScriptRoot + "\Microsoft.Office.Interop.Excel.dll"
         $destinationPath = "$env:userprofile\Microsoft.Office.Interop.Excel.dll"
@@ -324,152 +322,166 @@ switch -regex ($osCaption) {
 
     }
     # Mac OS Script
-    "^Mac OS X.*" {
+    default {
+
         do {
+            
             Write-Host ""
-            Write-Host "Mac OS detected"
-            Write-Host ""
+            # Prompt the user for the input file path
+            do {
+                Write-Host "Please specify the input CSV file path..."
+                $inputFilePath = Read-Host
+            } while (-not (Test-Path $inputFilePath))
 
-            # Open CSV file using file path
-            $path = Read-Host "Enter the file path of the CSV file"
-            $data = Import-Csv $path
-        
-            # Delete the columns
-            $data = $data | Select-Object -Property 
-            'User Agent', 
-            'Response Code', 
-            'Quantity', 
-            'Amount', 
-            'Rate', 
-            'Duration', 
-            'Host (Impacted) KBytes Rcvd', 
-            'Host (Impacted) KBytes Sent', 
-            'Host (Impacted) Packets Sent', 
-            'Host (Impacted) Packets Total', 
-            'Severity', 
-            'Vendor Info', 
-            'Serial Number', 
-            'Entity (Origin)', 
-            'Entity (Impacted)', 
-            'Region (Origin)', 
-            'Region (Impacted)', 
-            'Log Count', 
-            'Log Source Host', 
-            'Log Sequence Number', 
-            'First Log Date', 
-            'Last Log Date', 
-            'Rule Block', 
-            'User (Origin) Identity', 
-            'User (Impacted) Identity'
-        
-            # Re-order columns
-            $data = $data | Select-Object -Property
-            'Log Source Entity',
-            'Log Date',
-            'User (Origin)',
-            'Session',
-            'User (Impacted)',
-            'Log Source Type',
-            'Log Source',
-            'Classification',
-            'Common Event',
-            'Direction',
-            'Host (Origin)',
-            'Host (Impacted)',
-            'Application',
-            'Object',
-            'Object Name',
-            'Object Type',
-            'Hash',
-            'Policy',
-            'Result',
-            'URL',
-            'Subject',
-            'Version',
-            'Command',
-            'Reason',
-            'Action',
-            'Status',
-            'Session Type',
-            'Process Name',
-            'Process ID',
-            'Parent Process ID',
-            'Parent Process Name',
-            'Parent Process Path',
-            'Size',
-            'Known Application',
-            'Host (Impacted) KBytes Total',
-            'Host (Impacted) Packets Rcvd',
-            'Priority',
-            'Vendor Message ID',
-            'MPE Rule Name',
-            'Threat Name',
-            'Threat ID',
-            'CVE',
-            'MAC Address (Origin)',
-            'MAC Address (Impacted)',
-            'Interface (Origin)',
-            'Interface (Impacted)',
-            'IP Address (Origin)',
-            'IP Address (Impacted)',
-            'NAT IP Address (Origin)',
-            'NAT IP Address (Impacted)',
-            'Hostname (Origin)',
-            'Hostname (Impacted)',
-            'Known Host (Origin)',
-            'Known Host (Impacted)',
-            'Network (Origin)',
-            'Network (Impacted)',
-            'Domain (Impacted)',
-            'Domain (Origin)',
-            'Protocol',
-            'TCP/UDP Port (Origin)',
-            'TCP/UDP Port (Impacted)',
-            'NAT TCP/UDP Port (Origin)',
-            'NAT TCP/UDP Port (Impacted)',
-            'Actions',
-            'Sender Identity',
-            'Recipient Identity',
-            'Sender',
-            'Recipient',
-            'Group',
-            'Zone (Origin)',
-            'Zone (Impacted)',
-            'Location (Origin)',
-            'Location (Impacted)',
-            'Country (Origin)',
-            'Country (Impacted)',
-            'Log Message'
+            # Prompt the user for the output file path and name
+            do {
+                Write-Host "Please specify the output CSV file path and filename..."
+                $outputFilePath = Read-Host
+            } while (-not (Test-Path (Split-Path $outputFilePath)) -or (Split-Path $outputFilePath).Equals($null))
 
-            # Convert the 'Log Date' column to local time
-            $data = $data | ForEach-Object { $_.'Log Date' = ([DateTime]::Parse($_.'Log Date')).ToLocalTime().ToString('yyyy-MM-dd HH:mm:ss'); $_ }
-        
-        # Defang URLs and IPs
-        $data = $data | ForEach-Object -PipelineVariable item {
-            $item.URL = $item.URL -replace '\.', '[.]'
-            $item.URL = $item.URL -replace ':', '[:]'
-            $item.Subject = $item.Subject -replace '\.', '[.]'
-            $item.Subject = $item.Subject -replace ':', '[:]'
-            $item.{"Host (Origin)"} = $item.{"Host (Origin)"} -replace '\.', '[.]'
-            $item.{"Host (Impacted)"} = $item.{"Host (Impacted)"} -replace '\.', '[.]'
-            $item.{"IP Address (Origin)"} = $item.{"IP Address (Origin)"} -replace '\.', '[.]'
-            $item.{"IP Address (Impacted)"} = $item.{"IP Address (Impacted)"} -replace '\.', '[.]'
-            $item.{"NAT IP Address (Origin)"} = $item.{"NAT IP Address (Origin)"} -replace '\.', '[.]'
-            $item.{"NAT IP Address (Impacted)"} = $item.{"NAT IP Address (Impacted)"} -replace '\.', '[.]'
-            $item.{"Hostname (Origin)"} = $item.{"Hostname (Origin)"} -replace '\.', '[.]'
-            $item.{"Hostname (Impacted)"} = $item.{"Hostname (Impacted)"} -replace '\.', '[.]'
-            $item.{"Known Host (Origin)"} = $item.{"Known Host (Origin)"} -replace '\.', '[.]'
-            $item.{"Known Host (Impacted)"} = $item.{"Known Host (Impacted)"} -replace '\.', '[.]'
-            $item.{"Domain (Impacted)"} = $item.{"Domain (Impacted)"} -replace '\.', '[.]'
-            $item.{"Domain (Origin)"} = $item.{"Domain (Origin)"} -replace '\.', '[.]'
-            $item.{"Log Message"} = $item.{"Log Message"} -replace '\.', '[.]'
-            $item.{"Log Message"} = $item.{"Log Message"} -replace ':', '[:]'
-            return $item
-        }
+            # If the output file name is not specified, use the input file name with "_modified" appended
+            if ($outputFilePath -eq "") {
+                $outputFilePath = [IO.Path]::ChangeExtension($inputFilePath, "csv")
+                $outputFilePath = [IO.Path]::Combine((Split-Path $inputFilePath), [IO.Path]::GetFileNameWithoutExtension($outputFilePath) + "_modified.csv")
+            }
+            
+            # Define array of values to check for in column headers
+            $valuesToDelete = @('User Agent', 'Response Code', 'Quantity', 'Amount', 'Rate', 'Duration', 'Host (Impacted) KBytes Rcvd', 'Host (Impacted) KBytes Sent', 'Host (Impacted) Packets Sent', 'Host (Impacted) Packets Total', 'Severity', 'Vendor Info', 'Serial Number', 'Entity (Origin)', 'Entity (Impacted)', 'Region (Origin)', 'Region (Impacted)', 'Log Count', 'Log Source Host', 'Log Sequence Number', 'First Log Date', 'Last Log Date', 'Rule Block', 'User (Origin) Identity', 'User (Impacted) Identity')
+            
+            # Load the CSV file
+            $data = Import-Csv -Path $inputFilePath
+            
+            # Move columns to reflect provided order
+            $orderedColumns = @(
+                "Log Source Entity",
+                "Log Date",
+                "User (Origin)",
+                "Session",
+                "User (Impacted)",
+                "Log Source Type",
+                "Log Source",
+                "Classification",
+                "Common Event",
+                "Direction",
+                "Host (Origin)",
+                "Host (Impacted)",
+                "Application",
+                "Object",
+                "Object Name",
+                "Object Type",
+                "Hash",
+                "Policy",
+                "Result",
+                "URL",
+                "Subject",
+                "Version",
+                "Command",
+                "Reason",
+                "Action",
+                "Status",
+                "Session Type",
+                "Process Name",
+                "Process ID",
+                "Parent Process ID",
+                "Parent Process Name",
+                "Parent Process Path",
+                "Size",
+                "Known Application",
+                "Host (Impacted) KBytes Total",
+                "Host (Impacted) Packets Rcvd",
+                "Priority",
+                "Vendor Message ID",
+                "MPE Rule Name",
+                "Threat Name",
+                "Threat ID",
+                "CVE",
+                "MAC Address (Origin)",
+                "MAC Address (Impacted)",
+                "Interface (Origin)",
+                "Interface (Impacted)",
+                "IP Address (Origin)",
+                "IP Address (Impacted)",
+                "NAT IP Address (Origin)",
+                "NAT IP Address (Impacted)",
+                "Hostname (Origin)",
+                "Hostname (Impacted)",
+                "Known Host (Origin)",
+                "Known Host (Impacted)",
+                "Network (Origin)",
+                "Network (Impacted)",
+                "Domain (Impacted)",
+                "Domain (Origin)",
+                "Protocol",
+                "TCP/UDP Port (Origin)",
+                "TCP/UDP Port (Impacted)",
+                "NAT TCP/UDP Port (Origin)",
+                "NAT TCP/UDP Port (Impacted)",
+                "Actions",
+                "Sender Identity",
+                "Recipient Identity",
+                "Sender",
+                "Recipient",
+                "Group",
+                "Zone (Origin)",
+                "Zone (Impacted)",
+                "Location (Origin)",
+                "Location (Impacted)",
+                "Country (Origin)",
+                "Country (Impacted)",
+                "Log Message"
+            )
+            
+            # Reorder columns
+            $data = $data | Select-Object $orderedColumns
+            
+            # Define the column names that should be modified
+            $columnsToModify = @(
+                "URL",
+                "Subject",
+                "Host (Origin)",
+                "Host (Impacted)",
+                "IP Address (Origin)",
+                "IP Address (Impacted)",
+                "NAT IP Address (Origin)",
+                "NAT IP Address (Impacted)",
+                "Hostname (Origin)",
+                "Hostname (Impacted)",
+                "Known Host (Origin)",
+                "Known Host (Impacted)",
+                "Domain (Impacted)",
+                "Domain (Origin)",
+                "Protocol",
+                "Log Message"
+            )
+            
 
-            # save the CSV file with a name and path
-            $savePath = Read-Host "Enter the file path and name to save the modified CSV file"
-            $data | Export-Csv $savePath -NoTypeInformation
+            # Loop through each row of the data
+            foreach ($row in $data) {
+                # Remove columns containing specified values
+                foreach ($value in $valuesToDelete) {
+                    if ($row.PSObject.Properties.Name -contains $value) {
+                        $row.PSObject.Properties.Remove($value)
+                    }
+                }
+
+                # Convert Log Date to local time
+                $row.'Log Date' = [DateTime]::Parse($row.'Log Date').AddHours(11).ToString()
+
+                # Modify specified columns
+                foreach ($column in $columnsToModify) {
+                    $value = $row.$column
+            
+                    # Check if the value is not empty
+                    if (![string]::IsNullOrEmpty($value)) {
+                        # Defang values
+                        $newValue = $value.Replace(".", "[.]").Replace(":", "[:]")
+                        $row.$column = $newValue
+                    }
+                }
+            }
+            
+            # Export the modified data to a CSV file
+            $data | Export-Csv -Path $outputFilePath -NoTypeInformation
         
             # Prompt user to process more CSV files
             $answer = Read-Host "Do you want to process more CSV files? (Y/N)"
@@ -482,12 +494,6 @@ switch -regex ($osCaption) {
             }
         
         } while ($true)
-    }
-    # Unsupported OS
-    default {
-        Write-Host "Unsupported operating system."
-        Write-Host ""
-        $null = Read-Host
     }
 }
 
