@@ -16,13 +16,24 @@ Write-Host -ForegroundColor White '                                             
 
 # Switch statement that detects which operating system is being used (Windows or Mac OS)
 
-
 switch ($env:OS) {
     # Windows OS Script
     "Windows_NT" {
 
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
+
+        try {
+            Add-Type -AssemblyName Microsoft.Office.Interop.Excel -ErrorAction Stop
+
+            Write-Host "Microsoft.Office.Interop.Excel assembly found. Proceeding..."
+        }
+        catch {
+            Write-Error "Microsoft.Office.Interop.Excel assembly not found. Please make sure that Microsoft Office is installed on your system"
+            Write-Host "Press ENTER key to exit..."
+            $null = Read-Host
+            Exit
+        }
 
         # Set dimensions for PowerShell window
 
@@ -44,20 +55,6 @@ switch ($env:OS) {
 
         # Import Module
         Import-Module ImportExcel
-
-        $sourcePath = $PSScriptRoot + "\Microsoft.Office.Interop.Excel.dll"
-        $destinationPath = "$env:userprofile\Microsoft.Office.Interop.Excel.dll"
-
-        if (Test-Path $destinationPath) {
-        Write-Host ""
-        Write-Host "Microsoft.Office.Interop.Excel.dll was found in user profile path"
-        } else {
-         Copy-Item -Path $sourcePath -Destination $destinationPath
-        Write-Host ""
-        Write-Host "Microsoft.Office.Interop.Excel.dll was not found in user profile path, file copied to user profile path."
-        }
-
-        Add-Type -Path ".\Microsoft.Office.Interop.Excel.dll"
 
         Write-Host ""
         Write-Host "Windows OS detected"
@@ -502,6 +499,6 @@ switch ($env:OS) {
 
 # Prompt the user to exit
 Write-Host ""
-Write-Host "Press any key to exit..."
+Write-Host "Press ENTER key to exit..."
 $null = Read-Host
 
