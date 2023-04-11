@@ -19,7 +19,7 @@ Write-Host -ForegroundColor White '                                             
 
 switch ($env:OS) {
     # Windows OS Script
-    "Windows_iNT" {
+    "Windows_NT" {
 
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
