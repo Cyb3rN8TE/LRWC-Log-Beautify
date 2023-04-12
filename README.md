@@ -34,7 +34,6 @@ Microsoft Windows OS:
 
 **Dependencies:**
 - PowerShell 7 (https://github.com/PowerShell/PowerShell/releases/tag/v7.3.3)
-- Microsoft.Office.Interop.Excel.dll in the root directory of the script (provided)
 - NuGet Package Manager (https://www.nuget.org/downloads)
 - ImportExcel (https://www.powershellgallery.com/packages/ImportExcel/)
 
