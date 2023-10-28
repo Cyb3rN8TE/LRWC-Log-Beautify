@@ -2,12 +2,6 @@
 
 <img src="https://github.com/Cyb3rN8TE/LRWC-Log-Beautify/blob/Dev/Images/Logo.png" alt="LRWC Log Beautify Logo" width="150" height="150">
 
-**Why do we need this?**
-
-It can be difficult to interpret SIEM logs from a CSV file due to the lack of formatting.  
-
-This tool aims to make SIEM logs appear presentable to anyone who accesses the log export, whether that be a colleague, manager or a client.
-
 # Windows
 
 **What does it do?**
