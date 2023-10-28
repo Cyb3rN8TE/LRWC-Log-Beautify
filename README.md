@@ -2,6 +2,12 @@
 
 <img src="https://github.com/Cyb3rN8TE/LRWC-Log-Beautify/blob/Dev/Images/Logo.png" alt="LRWC Log Beautify Logo" width="150" height="150">
 
+**Introduction**
+
+LRWC Log Beautify is a PowerShell script designed to assist security analysts in enhancing the readability and usability of log data from the LogRhythm SIEM. This tool simplifies the process of organising, processing, and presenting log data, making it easier to read, filter, and work with, ultimately improving the workflow for security analysts and other users.
+
+**Disclaimer:** Please ensure that you have the necessary permissions to process the data in your CSV files. Handle sensitive information responsibly. LRWC Log Beautify is an independent project and is not affiliated with or endorsed by LogRhythm.
+
 # Windows
 
 **What does it do?**
@@ -89,7 +95,6 @@ macOS 10.13 and higher
 **Virus Scan**
 
 - LRWC Log Beautify.ps1 (https://www.virustotal.com/gui/file/8e43def286f2e006894df6eb2e4ceefd4d0ac82fea09ef80a69057acdb97e351/detection)
-- Microsoft.Office.Interop.Excel.dll (https://www.virustotal.com/gui/file/d5fbf3f71c40ca63b27601b5275c1cf5dc0cfd187c972579e2100f9215a375fe)
 
 **Demo**
 
