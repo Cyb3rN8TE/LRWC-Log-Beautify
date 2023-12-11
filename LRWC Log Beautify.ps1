@@ -11,7 +11,7 @@ Write-Host -ForegroundColor White '888      888  T88b  8888P   Y8888 Y88b  d88P 
 Write-Host -ForegroundColor White '88888888 888   T88b 888P     Y888  "Y8888P"       88888888 "Y88P"   "Y88888      8888888P"   "Y8888  "Y888888  "Y88888  "Y888 888 888     "Y88888 '
 Write-Host -ForegroundColor White '                                                                        888                                                                   888 '
 Write-Host -ForegroundColor White 'Author: Cyb3rN8TE 2023                                             Y8b d88P                                                              Y8b d88P '
-Write-Host -ForegroundColor White 'Version: 1.0.0                                                      "Y88P"                                                                "Y88P"  '
+Write-Host -ForegroundColor White 'Version: 1.1.0                                                      "Y88P"                                                                "Y88P"  '
 #Banner end
 
 # Switch statement that detects which operating system is being used (Windows or Mac OS)
@@ -26,6 +26,7 @@ switch ($env:OS) {
         try {
             Add-Type -AssemblyName Microsoft.Office.Interop.Excel -ErrorAction Stop
 
+            Write-Host 
             Write-Host "Microsoft.Office.Interop.Excel assembly found. Proceeding..."
         }
         catch {
@@ -65,7 +66,7 @@ switch ($env:OS) {
             Write-Host "Please select your file for processing.."
             
             # Define array of values to check for in column headers
-            $valuesToDelete = @('User Agent', 'Response Code', 'Quantity', 'Amount', 'Rate', 'Duration', 'Host (Impacted) KBytes Rcvd', 'Host (Impacted) KBytes Sent', 'Host (Impacted) Packets Sent', 'Host (Impacted) Packets Total', 'Severity', 'Vendor Info', 'Serial Number', 'Entity (Origin)', 'Entity (Impacted)', 'Region (Origin)', 'Region (Impacted)', 'Log Count', 'Log Source Host', 'Log Sequence Number', 'First Log Date', 'Last Log Date', 'Rule Block', 'User (Origin) Identity', 'User (Impacted) Identity')
+            $valuesToDelete = @('Quantity','Amount','Rate','Duration','Host (Impacted) KBytes Rcvd','Host (Impacted) KBytes Sent','Host (Impacted) Packets Sent','Host (Impacted) Packets Total','Severity','Vendor Info','Serial Number','Region (Origin)','Region (Impacted)','Log Count','Log Source Host','Log Sequence Number','First Log Date','Last Log Date','Rule Block','User (Origin) Identity','User (Impacted) Identity')
             
             # Create open file dialog
             $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
@@ -86,16 +87,26 @@ switch ($env:OS) {
                 $orderedColumns = @(
                     "Log Source Entity",
                     "Log Date",
-                    "User (Origin)",
-                    "Session",
-                    "User (Impacted)",
                     "Log Source Type",
                     "Log Source",
+                    "Session",
+                    "User (Origin)",
+                    "Host (Origin)",
+                    "MAC Address (Origin)",
+                    "IP Address (Origin)",
+                    "Location (Origin)",
                     "Classification",
                     "Common Event",
+                    "MPE Rule Name",
+                    "Protocol",
+                    "TCP/UDP Port (Origin)",
                     "Direction",
-                    "Host (Origin)",
+                    "TCP/UDP Port (Impacted)",
+                    "User (Impacted)",
                     "Host (Impacted)",
+                    "MAC Address (Impacted)",
+                    "IP Address (Impacted)",
+                    "Location (Impacted)",
                     "Application",
                     "Object",
                     "Object Name",
@@ -104,9 +115,11 @@ switch ($env:OS) {
                     "Policy",
                     "Result",
                     "URL",
+                    "User Agent",
                     "Subject",
                     "Version",
                     "Command",
+                    "Response Code",
                     "Reason",
                     "Action",
                     "Status",
@@ -118,47 +131,37 @@ switch ($env:OS) {
                     "Parent Process Path",
                     "Size",
                     "Known Application",
-                    "Host (Impacted) KBytes Total",
-                    "Host (Impacted) Packets Rcvd",
                     "Priority",
                     "Vendor Message ID",
-                    "MPE Rule Name",
                     "Threat Name",
                     "Threat ID",
                     "CVE",
-                    "MAC Address (Origin)",
-                    "MAC Address (Impacted)",
-                    "Interface (Origin)",
-                    "Interface (Impacted)",
-                    "IP Address (Origin)",
-                    "IP Address (Impacted)",
-                    "NAT IP Address (Origin)",
-                    "NAT IP Address (Impacted)",
-                    "Hostname (Origin)",
-                    "Hostname (Impacted)",
-                    "Known Host (Origin)",
-                    "Known Host (Impacted)",
-                    "Network (Origin)",
-                    "Network (Impacted)",
-                    "Domain (Impacted)",
-                    "Domain (Origin)",
-                    "Protocol",
-                    "TCP/UDP Port (Origin)",
-                    "TCP/UDP Port (Impacted)",
-                    "NAT TCP/UDP Port (Origin)",
-                    "NAT TCP/UDP Port (Impacted)",
                     "Actions",
                     "Sender Identity",
                     "Recipient Identity",
                     "Sender",
                     "Recipient",
                     "Group",
+                    "NAT TCP/UDP Port (Origin)",
+                    "NAT TCP/UDP Port (Impacted)",
+                    "Interface (Origin)",
+                    "Interface (Impacted)",
+                    "NAT IP Address (Origin)",
+                    "NAT IP Address (Impacted)",
+                    "Network (Origin)",
+                    "Network (Impacted)",
+                    "Domain (Impacted)",
+                    "Domain (Origin)",
                     "Zone (Origin)",
                     "Zone (Impacted)",
-                    "Location (Origin)",
-                    "Location (Impacted)",
                     "Country (Origin)",
                     "Country (Impacted)",
+                    "Hostname (Origin)",
+                    "Hostname (Impacted)",
+                    "Known Host (Origin)",
+                    "Known Host (Impacted)",
+                    "Entity (Origin)",
+                    "Entity (Impacted)",
                     "Log Message"
                 )
             
@@ -184,10 +187,16 @@ switch ($env:OS) {
                     "Protocol",
                     "Log Message"
                 )
-            
-                # Get the local time zone
-                $localTimeZone = [TimeZoneInfo]::Local
-            
+
+                # Convert Log Date format from MM/DD/YYYY to DD/MM/YYYY
+                foreach ($row in $data) {
+                    if ($row.PSObject.Properties.Name -contains 'Log Date' -and ![string]::IsNullOrEmpty($row."Log Date")) {
+                        $logDate = Get-Date $row."Log Date"
+                        $formattedLogDate = $logDate.ToString("dd/MM/yyyy HH:mm:ss")
+                        $row."Log Date" = $formattedLogDate
+                    }
+                }
+
                 # Loop through each row of the data
                 foreach ($row in $data) {
                     # Remove columns containing specified values
@@ -196,15 +205,6 @@ switch ($env:OS) {
                             $row.PSObject.Properties.Remove($value)
                         }
                     }
-            
-                    # Parse the UTC date/time value in the Log Date column
-                    $utcDateTime = [DateTime]::Parse($row.'Log Date')
-            
-                    # Convert the UTC date/time value to the local time zone
-                    $localDateTime = [TimeZoneInfo]::ConvertTimeFromUtc($utcDateTime, $localTimeZone)
-            
-                    # Replace the value in the Log Date column with the converted local time value
-                    $row.'Log Date' = $localDateTime.ToString('yyyy-MM-dd HH:mm:ss')
             
                     # Modify specified columns
                     foreach ($column in $columnsToModify) {
@@ -343,7 +343,7 @@ switch ($env:OS) {
             }
             
             # Define array of values to check for in column headers
-            $valuesToDelete = @('User Agent', 'Response Code', 'Quantity', 'Amount', 'Rate', 'Duration', 'Host (Impacted) KBytes Rcvd', 'Host (Impacted) KBytes Sent', 'Host (Impacted) Packets Sent', 'Host (Impacted) Packets Total', 'Severity', 'Vendor Info', 'Serial Number', 'Entity (Origin)', 'Entity (Impacted)', 'Region (Origin)', 'Region (Impacted)', 'Log Count', 'Log Source Host', 'Log Sequence Number', 'First Log Date', 'Last Log Date', 'Rule Block', 'User (Origin) Identity', 'User (Impacted) Identity')
+            $valuesToDelete = @('Quantity','Amount','Rate','Duration','Host (Impacted) KBytes Rcvd','Host (Impacted) KBytes Sent','Host (Impacted) Packets Sent','Host (Impacted) Packets Total','Severity','Vendor Info','Serial Number','Region (Origin)','Region (Impacted)','Log Count','Log Source Host','Log Sequence Number','First Log Date','Last Log Date','Rule Block','User (Origin) Identity','User (Impacted) Identity')
             
             # Load the CSV file
             $data = Import-Csv -Path $inputFilePath
@@ -352,16 +352,26 @@ switch ($env:OS) {
             $orderedColumns = @(
                 "Log Source Entity",
                 "Log Date",
-                "User (Origin)",
-                "Session",
-                "User (Impacted)",
                 "Log Source Type",
                 "Log Source",
+                "Session",
+                "User (Origin)",
+                "Host (Origin)",
+                "MAC Address (Origin)",
+                "IP Address (Origin)",
+                "Location (Origin)",
                 "Classification",
                 "Common Event",
+                "MPE Rule Name",
+                "Protocol",
+                "TCP/UDP Port (Origin)",
                 "Direction",
-                "Host (Origin)",
+                "TCP/UDP Port (Impacted)",
+                "User (Impacted)",
                 "Host (Impacted)",
+                "MAC Address (Impacted)",
+                "IP Address (Impacted)",
+                "Location (Impacted)",
                 "Application",
                 "Object",
                 "Object Name",
@@ -370,9 +380,11 @@ switch ($env:OS) {
                 "Policy",
                 "Result",
                 "URL",
+                "User Agent",
                 "Subject",
                 "Version",
                 "Command",
+                "Response Code",
                 "Reason",
                 "Action",
                 "Status",
@@ -384,47 +396,37 @@ switch ($env:OS) {
                 "Parent Process Path",
                 "Size",
                 "Known Application",
-                "Host (Impacted) KBytes Total",
-                "Host (Impacted) Packets Rcvd",
                 "Priority",
                 "Vendor Message ID",
-                "MPE Rule Name",
                 "Threat Name",
                 "Threat ID",
                 "CVE",
-                "MAC Address (Origin)",
-                "MAC Address (Impacted)",
-                "Interface (Origin)",
-                "Interface (Impacted)",
-                "IP Address (Origin)",
-                "IP Address (Impacted)",
-                "NAT IP Address (Origin)",
-                "NAT IP Address (Impacted)",
-                "Hostname (Origin)",
-                "Hostname (Impacted)",
-                "Known Host (Origin)",
-                "Known Host (Impacted)",
-                "Network (Origin)",
-                "Network (Impacted)",
-                "Domain (Impacted)",
-                "Domain (Origin)",
-                "Protocol",
-                "TCP/UDP Port (Origin)",
-                "TCP/UDP Port (Impacted)",
-                "NAT TCP/UDP Port (Origin)",
-                "NAT TCP/UDP Port (Impacted)",
                 "Actions",
                 "Sender Identity",
                 "Recipient Identity",
                 "Sender",
                 "Recipient",
                 "Group",
+                "NAT TCP/UDP Port (Origin)",
+                "NAT TCP/UDP Port (Impacted)",
+                "Interface (Origin)",
+                "Interface (Impacted)",
+                "NAT IP Address (Origin)",
+                "NAT IP Address (Impacted)",
+                "Network (Origin)",
+                "Network (Impacted)",
+                "Domain (Impacted)",
+                "Domain (Origin)",
                 "Zone (Origin)",
                 "Zone (Impacted)",
-                "Location (Origin)",
-                "Location (Impacted)",
                 "Country (Origin)",
                 "Country (Impacted)",
+                "Hostname (Origin)",
+                "Hostname (Impacted)",
+                "Known Host (Origin)",
+                "Known Host (Impacted)",
+                "Entity (Origin)",
+                "Entity (Impacted)",
                 "Log Message"
             )
             
@@ -450,10 +452,6 @@ switch ($env:OS) {
                 "Protocol",
                 "Log Message"
             )
-            
-
-            # Prompt user to enter the number of hours their local time zone differs from UTC
-            $hoursDiff = Read-Host "Please enter the number of hours your local time zone differs from UTC."
 
             # Loop through each row of the data
             foreach ($row in $data) {
@@ -463,9 +461,6 @@ switch ($env:OS) {
                         $row.PSObject.Properties.Remove($value)
                     }
                 }
-
-                # Convert Log Date to local time
-                $row.'Log Date' = [DateTime]::Parse($row.'Log Date').AddHours($hoursDiff).ToString()
 
                 # Modify specified columns
                 foreach ($column in $columnsToModify) {
@@ -479,6 +474,10 @@ switch ($env:OS) {
                     }
                 }
             }
+
+            # Convert Log Date format from MM/DD/YYYY to DD/MM/YYYY
+            $logDate = [DateTime]::ParseExact($row.'Log Date', 'MM/dd/yyyy HH:mm:ss tt', [System.Globalization.CultureInfo]::InvariantCulture)
+            $row.'Log Date' = $logDate.ToString('dd/MM/yyyy HH:mm:ss tt')
             
             # Export the modified data to a CSV file
             $data | Export-Csv -Path $outputFilePath -NoTypeInformation
