@@ -10,18 +10,13 @@ LRWC Log Beautify is a PowerShell script designed to assist security analysts in
 
 # Windows
 
-**What does it do?**
+**Functionality**
 1) Imports raw .CSV that the user selects
 2) Re-arranges field columns for readability
-3) Converts 'Log Date' from UTC to Local Time
+3) Converts 'Log Date' from MM/DD/YYYY format to DD/MM/YYYY format.
 4) Defangs any IP Addresses, URLs and Domains within any cells.
 5) Formats the spreadsheet as a styled table
 6) Save resulting file as a .XLSX Workbook
-
-**How to run the tool:**
-1) Right click LRWC Log Beautify.ps1 and select 'run with PowerShell'
-2) If NuGet and ImportExcel are NOT detected on the system, accept any prompts if you want to download and install them automatically. 
-3) Alternatively, you can download and install them manually by entering the commands below:
 
 **Prerequisites:**
 
@@ -62,26 +57,12 @@ Install-Module -Name ImportExcel
 
 # macOS
 
-**What does it do?**
+**Functionality**
 1) Imports raw .CSV that the user selects
 2) Re-arranges field columns for readability
-3) Converts 'Log Date' from UTC to Local Time
+3) Converts 'Log Date' from MM/DD/YYYY format to DD/MM/YYYY format.
 4) Defangs any IP Addresses, URLs and Domains within any cells.
 5) Save resulting file as a .CSV
-
-**How to run the tool:**
-1) Start the macOS native terminal application
-2) Enter the command powershell and hit enter
-
-```
-pwsh
-```
-
-3) Run LRWC Log Beautify.ps1
-
-```
-./LRWC Log Beautify.ps1
-```
 
 **Prerequisites:**
 
