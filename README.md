@@ -75,7 +75,8 @@ macOS 10.13 and higher
 
 **Virus Scan**
 
-- LRWC Log Beautify.ps1 (https://www.virustotal.com/gui/file/8e43def286f2e006894df6eb2e4ceefd4d0ac82fea09ef80a69057acdb97e351/detection)
+- LRWC Log Beautify.ps1 (https://www.virustotal.com/gui/file/e3fe0587c4e6aed45e980a7c76400cd9aa3564cd7f07ef4bd1faf390a828a08e?nocache=1)
+- LRWC Log Beautify.bas (https://www.virustotal.com/gui/file/213c8d36cc965d795b95e4a76b774bf2602c3d2c891fef70be5fe2fcf6e5787a?nocache=1)
 
 **Demo**
 
