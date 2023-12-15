@@ -1,6 +1,10 @@
+'Author: Cyb3rN8TE 2023 
+'Version: 1.0.0
+
 Attribute VB_Name = "LRWCLogBeautify"
 
 Sub LRWC_Log_Beautify()
+    ' Declare variables
     Dim MR As Range
     Dim cell As Range
     Dim col As Variant
@@ -8,10 +12,15 @@ Sub LRWC_Log_Beautify()
     Dim undesiredColumns As Variant
     
     ' Define undesired column headers (fields)
-    undesiredColumns = Array("Quantity", "Amount", "Rate", "Duration", "Host (Impacted) KBytes Rcvd", "Host (Impacted) KBytes Sent", _
-                             "Host (Impacted) Packets Sent", "Host (Impacted) Packets Total", "Severity", "Vendor Info", "Serial Number", _
-                             "Region (Origin)", "Region (Impacted)", "Log Count", "Log Source Host", "Log Sequence Number", "First Log Date", _
-                             "Last Log Date", "Rule Block", "User (Origin) Identity", "User (Impacted) Identity")
+    undesiredColumns = Array("Actions", "Log Source Host", _
+        "Host (Impacted) KBytes Rcvd", "Host (Impacted) KBytes Sent", _
+        "Host (Impacted) KBytes Total", "Host (Impacted) Packets Rcvd", _
+        "Host (Impacted) Packets Sent", "Host (Impacted) Packets Total", _
+        "User (Origin) Identity", "User (Impacted) Identity", _
+        "Rule Block", "First Log Date", "Last Log Date", _
+        "Log Sequence Number", "Log Count", "Serial Number", _
+        "Priority", "Severity", "Quantity", "Amount", _
+        "Size", "Rate", "Duration", "Version")
     
     ' Set the range of columns to search starting from row 1
     Set MR = Range("A1:ED1")
@@ -27,30 +36,43 @@ Sub LRWC_Log_Beautify()
     Next col
     
     ' Rearrange columns
-    Dim desiredColumns As Variant
-    desiredColumns = Array("Log Source Entity", "Log Date", "Log Source Type", "Log Source", "Session", "User (Origin)", "Host (Origin)", "MAC Address (Origin)", _
-                           "IP Address (Origin)", "Location (Origin)", "Classification", "Common Event", "MPE Rule Name", "Protocol", "TCP/UDP Port (Origin)", _
-                           "Direction", "TCP/UDP Port (Impacted)", "User (Impacted)", "Host (Impacted)", "MAC Address (Impacted)", "IP Address (Impacted)", _
-                           "Location (Impacted)", "Application", "Object", "Object Name", "Object Type", "Hash", "Policy", "Result", "URL", "User Agent", _
-                           "Subject", "Version", "Command", "Response Code", "Reason", "Action", "Status", "Session Type", "Process Name", "Process ID", _
-                           "Parent Process ID", "Parent Process Name", "Parent Process Path", "Size", "Known Application", "Priority", "Vendor Message ID", _
-                           "Threat Name", "Threat ID", "CVE", "Actions", "Sender Identity", "Recipient Identity", "Sender", "Recipient", "Group", _
-                           "NAT TCP/UDP Port (Origin)", "NAT TCP/UDP Port (Impacted)", "Interface (Origin)", "Interface (Impacted)", "NAT IP Address (Origin)", _
-                           "NAT IP Address (Impacted)", "Network (Origin)", "Network (Impacted)", "Domain (Impacted)", "Domain (Origin)", "Zone (Origin)", _
-                           "Zone (Impacted)", "Country (Origin)", "Country (Impacted)", "Hostname (Origin)", "Hostname (Impacted)", "Known Host (Origin)", _
-                           "Known Host (Impacted)", "Entity (Origin)", "Entity (Impacted)", "Log Message")
+    Dim columnOrder As Variant
+    columnOrder = Array("Log Source Entity", "Log Date", "Log Source Type", "Log Source", "Session", _
+        "User (Origin)", "Host (Origin)", "MAC Address (Origin)", "IP Address (Origin)", _
+        "NAT IP Address (Origin)", "Location (Origin)", "Classification", "Common Event", _
+        "MPE Rule Name", "Protocol", "Application", "Known Application", "TCP/UDP Port (Origin)", _
+        "Direction", "TCP/UDP Port (Impacted)", "User (Impacted)", "Host (Impacted)", _
+        "MAC Address (Impacted)", "IP Address (Impacted)", "NAT IP Address (Impacted)", _
+        "Location (Impacted)", "User Agent", "Command", "URL", "Action", "Subject", _
+        "Reason", "Response Code", "Result", "Status", "Policy", "Vendor Message ID", _
+        "Vendor Info", "Object", "Object Name", "Object Type", "Process Name", _
+        "Process ID", "Parent Process ID", "Parent Process Name", "Parent Process Path", _
+        "Hash", "Threat Name", "Threat ID", "CVE", "Sender", "Recipient", _
+        "Sender Identity", "Recipient Identity", "Session Type", "Group", "Country (Origin)", _
+        "Country (Impacted)", "Region (Origin)", "Region (Impacted)", "Zone (Origin)", _
+        "Zone (Impacted)", "Hostname (Origin)", "Hostname (Impacted)", "Known Host (Origin)", _
+        "Known Host (Impacted)", "Interface (Origin)", "Interface (Impacted)", "Network (Origin)", _
+        "Network (Impacted)", "NAT TCP/UDP Port (Origin)", "NAT TCP/UDP Port (Impacted)", _
+        "Domain (Impacted)", "Domain (Origin)", "Entity (Origin)", "Entity (Impacted)", "Log Message")
     
-    i = 1
-    For Each col In desiredColumns
-        For Each cell In MR
-            If cell.Value = col Then
-                cell.EntireColumn.Cut Destination:=Cells(1, i)
-                i = i + 1
-                Exit For
+    Dim columnIndex As Variant
+    Dim idx As Long
+
+    For idx = LBound(columnOrder) To UBound(columnOrder)
+        Set columnIndex = Nothing
+        On Error Resume Next
+        Set columnIndex = Rows(1).Find(What:=columnOrder(idx), LookIn:=xlValues, LookAt:=xlWhole)
+        On Error GoTo 0
+        
+        If Not columnIndex Is Nothing Then
+            If columnIndex.Column <> idx + 1 Then
+                columnIndex.EntireColumn.Cut
+                Columns(idx + 1).Insert Shift:=xlToRight
+                Application.CutCopyMode = False
             End If
-        Next cell
-    Next col
-    
+        End If
+    Next idx
+  
     ' Autofit columns
     Cells.Columns.AutoFit
     
@@ -82,7 +104,7 @@ Sub LRWC_Log_Beautify()
         End If
     Next cellInLogDate
     
-    ' Replace characters in specified columns
+    ' Define columns to defang
     Dim replaceColumns As Variant
     replaceColumns = Array("URL", "Subject", "Host (Origin)", "Host (Impacted)", "IP Address (Origin)", "IP Address (Impacted)", _
                            "NAT IP Address (Origin)", "NAT IP Address (Impacted)", "Hostname (Origin)", "Hostname (Impacted)", _
@@ -96,7 +118,6 @@ Sub LRWC_Log_Beautify()
     Dim colReplace As Range
     
     ' Defang artefacts
-
     For Each colName In replaceColumns
         Set colReplace = ws.Rows(1).Find(What:=colName, LookIn:=xlValues, LookAt:=xlWhole)
         
@@ -117,4 +138,22 @@ Sub LRWC_Log_Beautify()
     ActiveSheet.ListObjects.Add(xlSrcRange, _
         Range("A1").CurrentRegion, XlListObjectHasHeaders:=xlYes, _
         TableStyleName:="TableStyleMedium7").Name = "Table1"
+		
+    ' Sort by "Log Source Entity" column in alphabetical order
+    Dim tbl As ListObject
+    Dim sortColumn As Range
+    
+    ' Define the table
+    Set tbl = ActiveSheet.ListObjects("Table1")
+    
+    ' Find the "Log Source Entity" column
+    Set sortColumn = tbl.ListColumns("Log Source Entity").Range
+    
+    ' Sort the table by the "Log Source Entity" column in ascending order
+    With tbl.Sort
+        .SortFields.Clear
+        .SortFields.Add Key:=sortColumn, SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+        .Header = xlYes
+        .Apply
+    End With
 End Sub
