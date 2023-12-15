@@ -1,5 +1,5 @@
 'Author: Cyb3rN8TE 2023 
-'Version: 1.0.0
+'Version: 1.0.1
 
 Attribute VB_Name = "LRWCLogBeautify"
 
@@ -78,16 +78,39 @@ Sub LRWC_Log_Beautify()
     
     ' Change to DD/MM/YYYY format in "Log Date" column
     Dim logDateRange As Range
-    Dim cellInLogDate As Range 
-    
+    Dim cellInLogDate As Range
+    Dim parts() As String
+    Dim timePart As String
+
     ' Define the range for the "Log Date" column
     Set logDateRange = Range("B2:B" & Cells(Rows.Count, "B").End(xlUp).Row)
-    
+
     For Each cellInLogDate In logDateRange
         ' Check if the cell is not empty
         If cellInLogDate.Value <> "" Then
-            ' Split the date value by '/' delimiter
-            Dim parts() As String
+            ' Split the cell value by comma to separate date and time parts
+            parts = Split(cellInLogDate.Value, ",")
+            
+            If UBound(parts) = 1 Then ' Ensure there's a time part after splitting
+                ' Trim the time part and extract it
+                timePart = Trim(parts(1))
+                
+                ' Check if "pm" or "am" is present in the timePart
+                If InStr(1, LCase(timePart), "pm") > 0 Then
+                    If Left(timePart, 2) <> "12" Then ' If it's not noon (12 PM), convert to 24-hour format
+                        parts(1) = Format(TimeValue(timePart), "HH:mm")
+                    End If
+                ElseIf InStr(1, LCase(timePart), "am") > 0 Then
+                    If Left(timePart, 2) = "12" Then ' If it's midnight (12 AM), convert to 24-hour format
+                        parts(1) = "00" & Mid(timePart, 3, 5)
+                    End If
+                End If
+                
+                ' Join the date and modified time parts back together
+                cellInLogDate.Value = Trim(parts(0)) & ", " & parts(1)
+            End If
+            
+            ' Split the date value by '/' delimiter for formatting the date
             parts = Split(cellInLogDate.Value, "/")
             
             ' Check if the date has three parts (day/month/year)
@@ -103,7 +126,7 @@ Sub LRWC_Log_Beautify()
             End If
         End If
     Next cellInLogDate
-    
+
     ' Define columns to defang
     Dim replaceColumns As Variant
     replaceColumns = Array("URL", "Subject", "Host (Origin)", "Host (Impacted)", "IP Address (Origin)", "IP Address (Impacted)", _
